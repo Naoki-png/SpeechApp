@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 rootProject.name = "SpeechApp"
 include ':app'
 include ':domain'
+include ':data'

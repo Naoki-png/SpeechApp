@@ -6,4 +6,9 @@
     </style>
 
     <style name="Theme.SpeechApp" parent="Base.Theme.SpeechApp" />
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_smily</item>
+        <item name="postSplashScreenTheme">@style/Theme.SpeechApp</item>
+    </style>
 </resources>

@@ -8,7 +8,15 @@
     <fragment
         android:id="@+id/LoginFragment"
         android:name="com.example.speechapp.LoginFragment"
-        android:label="@string/login_fragment_label"
         tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_LoginFragment_to_ChatFragment"
+            app:destination="@id/ChatFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/ChatFragment"
+        android:name="com.example.speechapp.ChatFragment"
+        tools:layout="@layout/fragment_chat">
     </fragment>
 </navigation>

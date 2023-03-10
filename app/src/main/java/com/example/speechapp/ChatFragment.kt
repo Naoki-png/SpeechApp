@@ -45,7 +45,12 @@ class ChatFragment : Fragment() {
         speechRecognizer?.setRecognitionListener(createRecognitionListenerStringStream { Log.i("sakai", it) })
 
         binding.startChatButton.setOnClickListener {
-            speechRecognizer?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH))
+            speechRecognizer?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
+                putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, requireContext().getPackageName());
+            })
         }
         binding.endChatButton.setOnClickListener {
             speechRecognizer?.stopListening()
@@ -64,11 +69,23 @@ class ChatFragment : Fragment() {
             override fun onRmsChanged(rmsdB: Float) { /** 今回は特に利用しない */ }
             override fun onReadyForSpeech(params: Bundle) { onResult("onReadyForSpeech") }
             override fun onBufferReceived(buffer: ByteArray) { onResult("onBufferReceived") }
-            override fun onPartialResults(partialResults: Bundle) { onResult("onPartialResults") }
+            override fun onPartialResults(partialResults: Bundle) {
+                val stringArray = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                onResult("onPartialResults" + stringArray.toString())
+            }
             override fun onEvent(eventType: Int, params: Bundle) { onResult("onEvent") }
             override fun onBeginningOfSpeech() { onResult("onBeginningOfSpeech") }
             override fun onEndOfSpeech() { onResult("onEndOfSpeech") }
-            override fun onError(error: Int) { onResult("onError") }
+            override fun onError(error: Int) {
+                // RecognizerIntentが上手く動かないのでスピーチの終了時に再度開始する
+                speechRecognizer?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                    putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
+                    putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                    putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, requireContext().getPackageName());
+                })
+                onResult("onError")
+            }
             override fun onResults(results: Bundle) {
                 val stringArray = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 onResult("onResults " + stringArray.toString())

@@ -45,12 +45,7 @@ class ChatFragment : Fragment() {
         speechRecognizer?.setRecognitionListener(createRecognitionListenerStringStream { Log.i("sakai", it) })
 
         binding.startChatButton.setOnClickListener {
-            speechRecognizer?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
-                putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, requireContext().getPackageName());
-            })
+            speechRecognizer?.startListening(createSpeechIntent())
         }
         binding.endChatButton.setOnClickListener {
             speechRecognizer?.stopListening()
@@ -61,6 +56,15 @@ class ChatFragment : Fragment() {
         super.onDestroyView()
         speechRecognizer?.destroy()
         _binding = null
+    }
+
+    private fun createSpeechIntent() = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+        // このExtra指定は必須。https://developer.android.com/reference/android/speech/RecognizerIntent#ACTION_RECOGNIZE_SPEECH
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        // 部分結果を受信する指定。
+        putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        // オフラインエンジンを使用する指定。オンラインエンジンを使うと部分結果が受信できない。
+        putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
     }
 
     /** 公開関数で受け取った TextView の更新処理を各関数で呼び出す*/
@@ -77,13 +81,8 @@ class ChatFragment : Fragment() {
             override fun onBeginningOfSpeech() { onResult("onBeginningOfSpeech") }
             override fun onEndOfSpeech() { onResult("onEndOfSpeech") }
             override fun onError(error: Int) {
-                // RecognizerIntentが上手く動かないのでスピーチの終了時に再度開始する
-                speechRecognizer?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                    putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
-                    putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-                    putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, requireContext().getPackageName());
-                })
+                // RecognizerIntentの時間を長くするExtra指定が上手く動かないのでエラー時に再度開始する
+                speechRecognizer?.startListening(createSpeechIntent())
                 onResult("onError")
             }
             override fun onResults(results: Bundle) {
